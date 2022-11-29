@@ -81,6 +81,26 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
+const startLogoutTimer = () => {
+  let time = 100;
+  const tick = () => {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Login to get started';
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+
+  // Call the time every second
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
+
 const todaysDate = () => {
   const now = new Date();
   const day = `${now.getDate()}`.padStart(2, 0);
@@ -191,12 +211,12 @@ const updateUI = function (acc) {
 
 ///////////////////////////////////////
 // Event handlers
-let currentAccount;
+let currentAccount, timer;
 
 // fake always logged in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
 labelDate.textContent = todaysDate();
 
@@ -207,7 +227,7 @@ btnLogin.addEventListener('click', function (e) {
   currentAccount = accounts.find(
     acc => acc.username === inputLoginUsername.value
   );
-  console.log(currentAccount);
+  // console.log(currentAccount);
 
   if (currentAccount?.pin === +inputLoginPin.value) {
     // Display UI and message
@@ -223,6 +243,9 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
 
     // Update UI
     updateUI(currentAccount);
@@ -253,6 +276,10 @@ btnTransfer.addEventListener('click', function (e) {
 
     // Update UI
     updateUI(currentAccount);
+
+    // Timer reset
+    clearInterval(timer);
+    timer = startLogoutTimer();
   }
 });
 
@@ -261,15 +288,21 @@ btnLoan.addEventListener('click', function (e) {
 
   const amount = Math.floor(inputLoanAmount.value);
 
+  // Timer reset
+  clearInterval(timer);
+  timer = startLogoutTimer();
+
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // Add movement
-    currentAccount.movements.push(amount);
+    setTimeout(function () {
+      // Add movement
+      currentAccount.movements.push(amount);
 
-    // add loan date
-    currentAccount.movementsDates.push(new Date().toISOString());
+      // add loan date
+      currentAccount.movementsDates.push(new Date().toISOString());
 
-    // Update UI
-    updateUI(currentAccount);
+      // Update UI
+      updateUI(currentAccount);
+    }, 2500);
   }
   inputLoanAmount.value = '';
 });
@@ -300,8 +333,12 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
+
+  // Timer reset
+  clearInterval(timer);
+  timer = startLogoutTimer();
 });
 
 /////////////////////////////////////////////////
@@ -350,6 +387,7 @@ labelBalance.addEventListener('click', () => {
 //   new Intl.NumberFormat(navigator.language, options).format(num)
 // );
 
+// setTimeout
 const ingridients = ['olives', 'spinach'];
 const pizzaTimer = setTimeout(
   (ing1, ing2) => console.log(`Here is your pizza 🍕 with ${ing1} and ${ing2}`),
@@ -358,3 +396,9 @@ const pizzaTimer = setTimeout(
 );
 
 if (ingridients.includes('spinach')) clearTimeout(pizzaTimer);
+
+//setInterval
+// setInterval(() => {
+//   const now = new Date();
+//   console.log(now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds());
+// }, 1000);
