@@ -96,11 +96,18 @@ const formatMovementDate = date => {
     Math.abs(date2 - date1) / (1000 * 60 * 60 * 24);
 
   const daysPassed = Math.round(calcDaysPassed(new Date(), date));
-  console.log(daysPassed);
+  // console.log(daysPassed);
   if (daysPassed === 0) return 'today';
   if (daysPassed === 1) return 'yesterday';
   if (daysPassed <= 7) return `${daysPassed} days ago`;
   return date.toLocaleDateString();
+};
+
+const formatCur = (value, locale, currency) => {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: `${currency}`,
+  }).format(value);
 };
 
 const displayMovements = function (acc, sort = false) {
@@ -117,13 +124,15 @@ const displayMovements = function (acc, sort = false) {
 
     const displayDate = formatMovementDate(date);
 
+    const formattedMov = formatCur(mov, acc.locale, acc.currency);
+
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
     <div class="movements__date">${displayDate}</div>
-        <div class="movements__value">${mov.toFixed(2)}€</div>
+        <div class="movements__value">${formattedMov}</div>
       </div>
     `;
 
@@ -133,19 +142,19 @@ const displayMovements = function (acc, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
+  labelBalance.textContent = formatCur(acc.balance, acc.locale, acc.currency);
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = formatCur(incomes, acc.locale, acc.currency);
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+  labelSumOut.textContent = formatCur(Math.abs(out), acc.locale, acc.currency);
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -155,7 +164,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = formatCur(interest, acc.locale, acc.currency);
 };
 
 const createUsernames = function (accs) {
@@ -317,9 +326,35 @@ labelBalance.addEventListener('click', () => {
   });
 });
 
-const bigNr = '876_876_876_876';
-console.log(+bigNr.replaceAll('_', ''));
+// const bigNr = '876_876_876_876';
+// console.log(+bigNr.replaceAll('_', ''));
 
-const future = new Date(2013, 10, 19, 10, 30);
+// const future = new Date(2013, 10, 19, 10, 30);
 
-console.log(future.toLocaleDateString());
+// console.log(future.toLocaleDateString());
+
+// const num = 38473847.23;
+
+// const options = {
+//   style: 'currency',
+//   unit: 'mile-per-hour',
+//   currency: 'EUR',
+//   // useGrouping: false,
+// };
+
+// console.log('US: ', new Intl.NumberFormat('en-US', options).format(num));
+// console.log('Germany: ', new Intl.NumberFormat('de-DE', options).format(num));
+// console.log('Syria: ', new Intl.NumberFormat('ar-SY', options).format(num));
+// console.log(
+//   navigator.language,
+//   new Intl.NumberFormat(navigator.language, options).format(num)
+// );
+
+const ingridients = ['olives', 'spinach'];
+const pizzaTimer = setTimeout(
+  (ing1, ing2) => console.log(`Here is your pizza 🍕 with ${ing1} and ${ing2}`),
+  3000,
+  ...ingridients
+);
+
+if (ingridients.includes('spinach')) clearTimeout(pizzaTimer);
